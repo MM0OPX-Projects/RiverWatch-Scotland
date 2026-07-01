@@ -1,0 +1,5 @@
+﻿# Local/build clutter
+.android-build/
+android-apk/
+riverwatch-android-apk/build/
+*.idsig

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RiverWatch Scotland</title>
+<meta name="theme-color" content="#0b1220">
+<style>
+:root{--bg:#0b1220;--panel:#111b2f;--text:#eef5ff;--muted:#9db0cc;--good:#26d07c;--ok:#f6c945;--warn:#ff9f43;--bad:#ff5c67;--blue:#49a7ff;--shadow:0 20px 45px rgba(0,0,0,.35)}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:radial-gradient(circle at top,#172c52 0,#0b1220 48%,#070b13 100%);color:var(--text);min-height:100dvh}.wrap{max-width:1200px;margin:auto;padding:18px 14px 42px}.appHeader{background:linear-gradient(135deg,rgba(73,167,255,.32),rgba(38,208,124,.16) 52%,rgba(255,255,255,.045));border:1px solid rgba(255,255,255,.13);border-radius:30px;padding:20px;box-shadow:var(--shadow);margin-bottom:14px;position:relative;overflow:hidden}.appHeader:before{content:"";position:absolute;right:-60px;top:-80px;width:220px;height:220px;border-radius:50%;background:rgba(73,167,255,.18)}.top{position:relative;z-index:1;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px}.title h1{margin:0;line-height:.98;font-size:clamp(1.7rem,5vw,3.05rem);letter-spacing:-.045em}.title p{margin:7px 0 0;color:var(--muted);max-width:780px}.actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}button,.btn{border:0;border-radius:14px;padding:11px 14px;background:#24456f;color:white;font-weight:800;cursor:pointer;box-shadow:var(--shadow);text-decoration:none;display:inline-flex;align-items:center;gap:8px}button:hover,.btn:hover{filter:brightness(1.1)}.selectors{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:10px}.selectBox{background:rgba(6,12,24,.38);border:1px solid rgba(255,255,255,.10);border-radius:18px;padding:10px}.selectBox label{display:block;color:#bad4ef;font-size:.76rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;margin:0 0 6px 3px}select,input{width:100%;border:1px solid rgba(255,255,255,.12);background:#0d1729;color:var(--text);border-radius:12px;padding:11px;font:inherit}.stationTabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.stationTabs button{box-shadow:none;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.11);padding:9px 12px;border-radius:999px}.stationTabs button.active{background:linear-gradient(135deg,#2f8fe8,#23629d);border-color:rgba(255,255,255,.22)}.stationTabs button small{display:block;color:#bad4ef;font-size:.7rem;font-weight:750}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.card{background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025));border:1px solid rgba(255,255,255,.09);border-radius:24px;padding:16px;box-shadow:var(--shadow);min-height:120px;backdrop-filter:blur(8px)}.hero{grid-column:span 5;display:flex;flex-direction:column;justify-content:space-between}.river{grid-column:span 4}.pressure{grid-column:span 3}.chartCard{grid-column:span 8}.weather{grid-column:span 4}.full{grid-column:span 12}.kicker{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:900}.scoreRow{display:flex;align-items:center;gap:18px}.dial{width:138px;height:138px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--good) calc(var(--score)*1%),rgba(255,255,255,.1) 0);position:relative;flex:none}.dial:after{content:"";position:absolute;inset:12px;border-radius:50%;background:#101a2d}.dial b{position:relative;z-index:1;font-size:2.3rem}.verdict{font-size:clamp(1.5rem,5vw,2.4rem);font-weight:950;line-height:1.02;margin:6px 0}.why{color:var(--muted);line-height:1.45}.metric{font-size:2.35rem;font-weight:950;letter-spacing:-.04em;margin:6px 0 4px}.metric small{font-size:1rem;color:var(--muted);font-weight:750}.pill{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:7px 10px;font-weight:850;font-size:.9rem;background:rgba(255,255,255,.08);margin-top:6px}.pill.good{color:var(--good)}.pill.ok{color:var(--ok)}.pill.warn{color:var(--warn)}.pill.bad{color:var(--bad)}.miniGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.mini{background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.075);border-radius:16px;padding:10px}.mini .lab{color:var(--muted);font-size:.82rem}.mini .val{font-size:1.16rem;font-weight:900;margin-top:3px}.val.good{color:var(--good)}.val.ok{color:var(--ok)}.val.warn{color:var(--warn)}.val.bad{color:var(--bad)}canvas{width:100%;height:330px;display:block}.chartControls{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}.tabs{display:flex;gap:8px}.tabs button{padding:8px 12px;background:rgba(255,255,255,.09);box-shadow:none}.tabs button.active{background:#3269a9}.decisionCard{overflow:hidden;position:relative;border:0;color:white;background:linear-gradient(135deg,#25344f,#152139)}.decisionCard.good{background:linear-gradient(135deg,#11683f,#1e9b61)}.decisionCard.ok{background:linear-gradient(135deg,#8a6810,#d6a921);color:#10141e}.decisionCard.warn{background:linear-gradient(135deg,#98521a,#f08b2e)}.decisionCard.bad{background:linear-gradient(135deg,#8c1f2c,#d84355)}.decisionBadge{display:inline-flex;align-items:center;gap:8px;font-weight:950;font-size:clamp(2rem,6vw,3.6rem);letter-spacing:-.05em;margin:6px 0}.decisionCard .kicker{color:rgba(255,255,255,.8)}.decisionCard .why{color:rgba(255,255,255,.86)}.decisionCard.ok .kicker,.decisionCard.ok .why{color:rgba(0,0,0,.72)}.notice{grid-column:span 12;background:rgba(73,167,255,.09);border-color:rgba(73,167,255,.22);min-height:auto}.methodWrap{overflow-x:visible}.methodTable{width:100%;table-layout:fixed;margin-top:12px;border-collapse:collapse}.methodTable th,.methodTable td{border-bottom:1px solid rgba(255,255,255,.1);padding:9px 5px;text-align:center;white-space:normal}.methodTable th:first-child,.methodTable td:first-child{text-align:left;width:38%}.methodTable th:not(:first-child),.methodTable td:not(:first-child){width:20.666%}.methodSignal{font-weight:950}.methodSignal.good{color:var(--good)}.methodSignal.ok{color:var(--ok)}.methodSignal.warn{color:var(--warn)}.methodSignal.bad{color:var(--bad)}.footer{margin-top:18px;color:var(--muted);font-size:.86rem;line-height:1.4}.credits{margin-top:18px;padding:14px 2px 0;color:var(--muted);font-size:.86rem;line-height:1.45}.credits a{color:#bad4ef}.err{color:#ffd6d6}.loader{opacity:.75;animation:pulse 1.2s infinite}@keyframes pulse{50%{opacity:.35}}@media(max-width:900px){.selectors{grid-template-columns:1fr}.hero,.river,.pressure,.chartCard,.weather{grid-column:span 12}.top{flex-direction:column}.actions{justify-content:flex-start}.scoreRow{align-items:flex-start}.dial{width:116px;height:116px}canvas{height:260px}}@media(max-width:480px){.wrap{padding:10px 8px 28px}.appHeader{padding:14px;border-radius:20px}.title h1{font-size:2rem;line-height:1.05}.title p{font-size:.95rem}.actions{width:100%;display:grid;grid-template-columns:1fr 1fr}.actions .btn,.actions button{justify-content:center;padding:10px 8px}.scoreRow{flex-direction:column;gap:12px}.dial{width:104px;height:104px}.dial b{font-size:1.85rem}.verdict{font-size:1.55rem}.decisionBadge{font-size:2rem;line-height:1.05;overflow-wrap:anywhere}.metric{font-size:2rem}.miniGrid{grid-template-columns:1fr}.card{border-radius:18px;padding:14px}canvas{height:220px}.chartControls{align-items:flex-start;flex-direction:column}.tabs{width:100%;display:grid;grid-template-columns:1fr 1fr}.tabs button{justify-content:center}.methodTable th,.methodTable td{padding:8px 3px;font-size:.9rem}.methodTable th:first-child,.methodTable td:first-child{width:36%}.methodTable th:not(:first-child),.methodTable td:not(:first-child){width:21.333%}.methodSignal{font-size:.88rem}.credits{padding-inline:4px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="appHeader">
+  <div class="top">
+    <div class="title"><h1>RiverWatch Scotland</h1><p id="stationSub">Your guide to Scotlands river fishing conditions</p></div>
+    <div class="actions"><button id="refreshBtn">↻ Refresh</button><a class="btn" id="sepaLink" href="https://waterlevels.sepa.org.uk/" target="_blank" rel="noopener">SEPA page</a></div>
+  </div>
+  <div class="selectors">
+    <div class="selectBox"><label for="riverSearch">River / catchment</label><input id="riverSearch" placeholder="Search rivers e.g. Almond, Tay, Tweed…"><select id="riverSelect" size="1" aria-label="River selector"></select></div>
+    <div class="selectBox"><label>Station on selected river</label><div class="stationTabs" id="stationTabs"></div></div>
+  </div>
+</header>
+<div class="grid">
+<section class="card hero"><div><div class="kicker">River condition</div><div class="scoreRow"><div class="dial" id="dial" style="--score:0"><b id="score">--</b></div><div><div class="verdict" id="verdict">Loading…</div><div class="why" id="reason">Loading SEPA river catalogue and live station data.</div><div id="clarityPill" class="pill">👁 Visibility estimate</div></div></div></div><div class="footer">Water colour is not measured by SEPA. Visibility is estimated from level and trend only.</div></section>
+<section class="card river"><div class="kicker">River level</div><div class="metric" id="level">-- <small>m</small></div><div id="trendPill" class="pill">Trend</div><div class="miniGrid"><div class="mini"><div class="lab">3h change</div><div class="val" id="change3">--</div></div><div class="mini"><div class="lab">6h change</div><div class="val" id="change6">--</div></div><div class="mini"><div class="lab">12h change</div><div class="val" id="change12">--</div></div><div class="mini"><div class="lab">24h change</div><div class="val" id="change24">--</div></div></div></section>
+<section class="card pressure"><div class="kicker">Pressure</div><div class="metric" id="pressure">-- <small>hPa</small></div><div id="pressurePill" class="pill">Pressure trend</div><div class="miniGrid"><div class="mini"><div class="lab">Air temp</div><div class="val" id="temp">--</div></div><div class="mini"><div class="lab">Wind</div><div class="val" id="wind">--</div></div></div></section>
+<section class="card chartCard"><div class="chartControls"><div><div class="kicker">Water level graph</div><div class="muted" id="chartLabel">Last 5 days</div></div><div class="tabs"><button id="btn5" class="active">5 days</button><button id="btn31">1 month</button></div></div><canvas id="levelChart" width="900" height="330"></canvas></section>
+<section class="card weather"><div class="kicker" id="weatherTitle">Selected river catchment</div><div class="metric" id="rain24">-- <small>mm</small></div><div class="muted">Estimated rain next 24h</div><div class="miniGrid"><div class="mini"><div class="lab">Next 48h rain</div><div class="val" id="rain48">--</div></div><div class="mini"><div class="lab">River impact</div><div class="val" id="rainImpact">--</div></div><div class="mini"><div class="lab">Weather point</div><div class="val" id="weatherPoint">--</div></div><div class="mini"><div class="lab">Cloud</div><div class="val" id="cloud">--</div></div></div></section>
+<section class="card full decisionCard" id="decisionCard"><div class="kicker">Quick fishing decision helper</div><div class="decisionBadge" id="goNoGo">--</div><div class="why" id="decisionText">Waiting for live river and weather data.</div><div class="miniGrid"><div class="mini"><div class="lab">Next 24 hours</div><div class="val" id="fish24">--</div></div><div class="mini"><div class="lab">Next 48 hours</div><div class="val" id="fish48">--</div></div><div class="mini"><div class="lab">Best signal</div><div class="val" id="bestSignal">--</div></div><div class="mini"><div class="lab">Biggest concern</div><div class="val" id="bigConcern">--</div></div></div></section>
+<section class="card notice"><div class="kicker">Fishing methods</div>
+<div class="methodWrap"><table class="methodTable">
+<thead><tr><th>Method</th><th>Now</th><th>24h</th><th>48h</th></tr></thead>
+<tbody>
+<tr><td>Fly fishing</td><td id="methodFlyNow">--</td><td id="methodFly24">--</td><td id="methodFly48">--</td></tr>
+<tr><td>Spinning</td><td id="methodSpinNow">--</td><td id="methodSpin24">--</td><td id="methodSpin48">--</td></tr>
+<tr><td>Bait fishing</td><td id="methodBaitNow">--</td><td id="methodBait24">--</td><td id="methodBait48">--</td></tr>
+</tbody>
+</table></div>
+<p class="footer">Method signals are calculated from selected station level, trend, estimated clarity and forecast rain for the SEPA catchment.</p>
+</section>
+</div>
+<footer class="credits">Data sources: <a href="https://waterlevels.sepa.org.uk/" target="_blank" rel="noopener">SEPA Water Levels</a>, SEPA Time Series API and <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>. Created by Colin Summers.</footer>
+</div>
+<script>
+const API='https://timeseries.sepa.org.uk/KiWIS/KiWIS?service=kisters&type=queryServices&datasource=0';
+const FALLBACK=[
+ {river:'Almond (Lothian)',id:'14881',name:'Whitburn',lat:55.867,lon:-3.684,catchment:'Forth'},
+ {river:'Almond (Lothian)',id:'14869',name:'Almondell',lat:55.895,lon:-3.485,catchment:'Forth'},
+ {river:'Almond (Lothian)',id:'14867',name:'Craigiehall',lat:55.942,lon:-3.346,catchment:'Forth'},
+ {river:'Tay',id:'10048',name:'Perth',lat:56.395,lon:-3.430,catchment:'Tay'},
+ {river:'Clyde',id:'133130',name:'Tulliford Mill',lat:55.671,lon:-3.665,catchment:'Clyde'},
+ {river:'Tweed',id:'9514',name:'Norham',lat:55.718,lon:-2.163,catchment:'Tweed'},
+ {river:'North Esk (Tayside)',id:'14927',name:'Logie Mill',lat:56.729,lon:-2.656,catchment:'Esk Group'},
+ {river:'Eye Water',id:'15017',name:'Eyemouth Mill',lat:55.871,lon:-2.100,catchment:'Tweed'}
+];
+let catalogue=[], rivers=[], currentRiver='', currentStation=null, riverData=[], monthData=[], weatherData=null, currentWeatherTarget=null, currentPeriod='5d';
+const $=id=>document.getElementById(id); const fmt=(n,d=3)=>Number.isFinite(n)?n.toFixed(d):'--';
+function sepaPageUrl(id){return `https://waterlevels.sepa.org.uk/Station/${id}/`}
+function sepaDataUrl(id,period){return `${API}&request=getTimeseriesValues&ts_path=1/${id}/SG/15m.Cmd&period=${period}&returnfields=Timestamp,Value,Quality%20Code&metadata=true&format=json`}
+function stationCatalogueUrl(){return `${API}&request=getStationList&stationparameter_no=SG&object_type=General&flatten=true&returnfields=station_no,station_name,river_name,catchment_name,station_latitude,station_longitude,stationparameter_no&format=json`}
+function weatherUrl(lat,lon){return `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,precipitation,pressure_msl,wind_speed_10m,cloud_cover&hourly=precipitation,pressure_msl,temperature_2m,wind_speed_10m,cloud_cover&past_days=1&forecast_days=3&timezone=Europe%2FLondon`}
+function normaliseRows(json){
+  const rows=Array.isArray(json)?json:(json?.data||json?.rows||[]);
+  return rows.map(r=>{
+    if(Array.isArray(r)){return r}
+    return r;
+  });
+}
+function field(row,names,idx){
+  if(Array.isArray(row)) return row[idx];
+  for(const n of names){ if(row[n]!=null) return row[n]; }
+  return undefined;
+}
+function parseCatalogue(json){
+  let rows=normaliseRows(json); let out=[];
+  for(const r of rows){
+    let id=String(field(r,['station_no','station_no '],0)||'').trim();
+    let name=String(field(r,['station_name'],1)||'').trim();
+    let river=String(field(r,['river_name'],2)||field(r,['catchment_name'],3)||'Unknown river').trim();
+    let catchment=String(field(r,['catchment_name'],3)||'').trim();
+    let lat=parseFloat(field(r,['station_latitude'],4)); let lon=parseFloat(field(r,['station_longitude'],5));
+    let param=String(field(r,['stationparameter_no'],6)||'');
+    if(id && name && (param.includes('SG')||!param)) out.push({id,name,river:river||'Unknown river',catchment,lat,lon});
+  }
+  // remove duplicates
+  const seen=new Set(); return out.filter(s=>{const k=s.id+'|'+s.name; if(seen.has(k))return false; seen.add(k); return true;});
+}
+function parseSepa(json){try{let ts=Array.isArray(json)?json[0]:json; let vals=ts.data||ts.values||ts.timeseries?.[0]?.data||[]; return vals.map(v=>{let t=Array.isArray(v)?v[0]:(v.timestamp||v.time||v.Timestamp); let val=parseFloat(Array.isArray(v)?v[1]:(v.value??v.Value)); return {t:new Date(t),v:val};}).filter(p=>Number.isFinite(p.v)&&!isNaN(p.t)).sort((a,b)=>a.t-b.t)}catch(e){return []}}
+function latest(){return riverData[riverData.length-1]}
+function changeHours(h){let l=latest(); if(!l)return NaN; let target=l.t.getTime()-h*3600e3; let prev=[...riverData].reverse().find(p=>p.t.getTime()<=target)||riverData[0]; return l.v-prev.v}
+function classForDelta(d){if(!Number.isFinite(d))return''; if(d>0.015)return'bad'; if(d>0.005)return'warn'; if(d<-0.015)return'good'; if(d<-0.005)return'good'; return'ok'}
+function deltaText(d){if(!Number.isFinite(d))return'--'; const arrow=d>0.005?'▲':d<-0.005?'▼':'→'; return `${arrow} ${d>=0?'+':''}${d.toFixed(3)} m`}
+function setVal(id,text,cls){const el=$(id); el.textContent=text; el.className='val '+(cls||'')}
+function analyse(){
+  const l=latest(); if(!l) return null; const c3=changeHours(3),c6=changeHours(6),c12=changeHours(12),c24=changeHours(24);
+  const level=l.v; let score=92; if(level>.5)score-=55; else if(level>.4)score-=38; else if(level>.3)score-=22; else if(level>.22)score-=8; if(c3>.025)score-=24; else if(c3>.01)score-=14; if(c24>.08)score-=18; if(c6<-.02)score+=8; score=Math.max(5,Math.min(98,Math.round(score)));
+  const state=score>=75?'good':score>=55?'ok':score>=35?'warn':'bad';
+  const verdict=score>=75?'Good conditions':score>=55?'Fair / watch trend':score>=35?'Marginal':'Not recommended';
+  const go=score>=75?'✔ GO FISHING':score>=55?'⚠ MAYBE':score>=35?'⚠ MARGINAL':'✖ WAIT';
+  let trend='Stable'; if(c3>.02)trend='Rising quickly'; else if(c3>.006)trend='Rising'; else if(c3<-.02)trend='Dropping steadily'; else if(c3<-.006)trend='Dropping';
+  let clarity=level>.5||c3>.025?'Chocolate / poor':level>.4?'Coloured':level>.3?'Slight colour likely':'Likely good';
+  return {level,score,state,verdict,go,trend,clarity,c3,c6,c12,c24};
+}
+async function loadCatalogue(){
+  $('reason').textContent='Loading SEPA river and station catalogue…';
+  try{const j=await fetch(stationCatalogueUrl()).then(r=>r.json()); catalogue=parseCatalogue(j); if(catalogue.length<20) throw new Error('Catalogue too small');}
+  catch(e){catalogue=FALLBACK; $('reason').innerHTML='Could not load the full SEPA catalogue in this browser, using built-in demo stations.';}
+  rivers=[...new Set(catalogue.map(s=>s.river||'Unknown river'))].sort((a,b)=>a.localeCompare(b));
+  currentRiver=rivers.find(r=>/Almond/i.test(r))||rivers[0]; renderRiverSelect(); selectRiver(currentRiver);
+}
+function matchingRivers(){const q=$('riverSearch').value.trim().toLowerCase(); return rivers.filter(r=>!q||r.toLowerCase().includes(q));}
+function renderRiverSelect(){
+  const matches=matchingRivers(); const sel=$('riverSelect'); sel.innerHTML='';
+  const hasCurrent=matches.includes(currentRiver);
+  if(!hasCurrent&&matches.length){
+    const prompt=document.createElement('option');
+    prompt.value=''; prompt.textContent='Select matching river...'; prompt.selected=true; prompt.disabled=true;
+    sel.appendChild(prompt);
+  }
+  matches.forEach(r=>{const opt=document.createElement('option'); opt.value=r; opt.textContent=`${r} (${catalogue.filter(s=>s.river===r).length})`; if(r===currentRiver)opt.selected=true; sel.appendChild(opt);});
+}
+function handleRiverSearch(){
+  renderRiverSelect();
+  const q=$('riverSearch').value.trim().toLowerCase(); if(!q) return;
+  const matches=matchingRivers(); const exact=matches.find(r=>r.toLowerCase()===q);
+  const target=exact||(matches.length===1?matches[0]:null);
+  if(target&&target!==currentRiver) selectRiver(target);
+}
+function selectRiver(r){currentRiver=r; const stations=catalogue.filter(s=>s.river===r); currentStation=stations[0]; renderRiverSelect(); renderStationTabs(); load();}
+function renderStationTabs(){const box=$('stationTabs'); box.innerHTML=''; catalogue.filter(s=>s.river===currentRiver).forEach(st=>{const b=document.createElement('button'); b.type='button'; b.innerHTML=`${st.name}<small>${st.id}</small>`; if(currentStation&&st.id===currentStation.id)b.classList.add('active'); b.onclick=()=>{currentStation=st; renderStationTabs(); load();}; box.appendChild(b);});}
+function weatherTargetForCurrentRiver(){
+  const catchment=currentStation?.catchment||'';
+  const byCatchment=catchment?catalogue.filter(s=>s.catchment===catchment):[];
+  const byRiver=catalogue.filter(s=>s.river===currentRiver);
+  const points=(byCatchment.length?byCatchment:byRiver).filter(s=>Number.isFinite(s.lat)&&Number.isFinite(s.lon));
+  if(!points.length&&currentStation&&Number.isFinite(currentStation.lat)&&Number.isFinite(currentStation.lon)) points.push(currentStation);
+  if(!points.length) return null;
+  const lat=points.reduce((sum,s)=>sum+s.lat,0)/points.length;
+  const lon=points.reduce((sum,s)=>sum+s.lon,0)/points.length;
+  return {lat,lon,catchment:catchment||currentRiver,count:points.length,source:byCatchment.length?'catchment':'river'};
+}
+async function fetchWeatherForRiver(){
+  const target=weatherTargetForCurrentRiver();
+  if(!target) throw new Error('No station coordinates for catchment weather');
+  currentWeatherTarget=target;
+  const j=await fetch(weatherUrl(target.lat,target.lon)).then(r=>r.json());
+  $('weatherPoint').textContent=`${target.catchment} ${target.source} (${target.count} stations)`;
+  return j;
+}
+async function load(){
+  if(!currentStation) return; $('sepaLink').href=sepaPageUrl(currentStation.id);
+  $('verdict').textContent='Loading…'; $('reason').textContent='Fetching live SEPA and weather data.';
+  try{const [d5,d31,w]=await Promise.all([fetch(sepaDataUrl(currentStation.id,'P5D')).then(r=>r.json()),fetch(sepaDataUrl(currentStation.id,'P31D')).then(r=>r.json()),fetchWeatherForRiver()]); riverData=parseSepa(d5); monthData=parseSepa(d31); weatherData=w; render();}
+  catch(e){$('verdict').textContent='Data unavailable'; $('reason').innerHTML=`<span class="err">${e.message}</span>`;}
+}
+function render(){const a=analyse(); if(!a)return; $('level').innerHTML=`${fmt(a.level)} <small>m</small>`; $('score').textContent=a.score; $('dial').style.setProperty('--score',a.score); $('verdict').textContent=a.verdict; $('reason').textContent=`${currentRiver} at ${currentStation.name}: ${a.trend.toLowerCase()}, with estimated visibility: ${a.clarity.toLowerCase()}.`; ['3','6','12','24'].forEach(h=>setVal('change'+h,deltaText(a['c'+h]),classForDelta(a['c'+h]))); $('trendPill').className='pill '+(a.trend.includes('Rising')?'bad':a.trend.includes('Dropping')?'good':'ok'); $('trendPill').textContent=a.trend; $('clarityPill').className='pill '+(a.clarity.includes('good')?'good':a.clarity.includes('Slight')?'ok':a.clarity.includes('Coloured')?'warn':'bad'); $('clarityPill').textContent='👁 '+a.clarity; renderWeather(a); renderDecision(a); renderMethods(a); drawChart(currentPeriod==='5d'?riverData:monthData);}
+function sumHours(arr,hours){if(!arr?.hourly?.time)return NaN; const now=Date.now(); const end=now+hours*3600e3; let s=0; arr.hourly.time.forEach((t,i)=>{const ms=new Date(t).getTime(); if(ms>=now&&ms<=end)s+=Number(arr.hourly.precipitation[i])||0;}); return s;}
+function pressureDelta(){if(!weatherData?.hourly?.time)return NaN; const now=Date.now(); let cur=null,old=null; weatherData.hourly.time.forEach((t,i)=>{const ms=new Date(t).getTime(); if(ms<=now)cur=weatherData.hourly.pressure_msl[i]; if(ms<=now-24*3600e3)old=weatherData.hourly.pressure_msl[i];}); return Number(cur)-Number(old);}
+function renderWeather(a){const cur=weatherData?.current||{}; const r24=sumHours(weatherData,24), r48=sumHours(weatherData,48), pd=pressureDelta(); $('weatherTitle').textContent=currentWeatherTarget?`${currentWeatherTarget.catchment} catchment`:`${currentRiver} catchment`; $('rain24').innerHTML=`${fmt(r24,1)} <small>mm</small>`; setVal('rain48',`${fmt(r48,1)} mm`,r48>20?'bad':r48>10?'warn':r48>4?'ok':'good'); setVal('rainImpact',r24>12?'Rise likely':r24>5?'May rise':'Little impact',r24>12?'bad':r24>5?'warn':'good'); $('pressure').innerHTML=`${fmt(cur.pressure_msl,0)} <small>hPa</small>`; $('pressurePill').className='pill '+(pd>2?'good':pd<-2?'warn':'ok'); $('pressurePill').textContent=(pd>2?'▲ Rising':pd<-2?'▼ Falling':'→ Steady'); $('temp').textContent=Number.isFinite(cur.temperature_2m)?`${Math.round(cur.temperature_2m)}°C`:'--'; $('wind').textContent=Number.isFinite(cur.wind_speed_10m)?`${Math.round(cur.wind_speed_10m)} mph`:'--'; $('cloud').textContent=Number.isFinite(cur.cloud_cover)?`${Math.round(cur.cloud_cover)}%`:'--';}
+function renderDecision(a){const r24=sumHours(weatherData,24), r48=sumHours(weatherData,48); let state=a.state; if(r24>12&&state==='good')state='ok'; if(r24>20)state='warn'; const card=$('decisionCard'); card.className='card full decisionCard '+state; $('goNoGo').textContent=state==='good'?'✔ GO FISHING':state==='ok'?'⚠ FAIR':state==='warn'?'⚠ MARGINAL':'✖ WAIT'; $('decisionText').textContent=`Now: ${a.verdict}. Next 24h rain estimate is ${fmt(r24,1)} mm for the selected river catchment.`; setVal('fish24',r24>12?'Worsening likely':a.c6<-.01?'Improving':'Similar / steady',r24>12?'bad':a.c6<-.01?'good':'ok'); setVal('fish48',r48>25?'Poorer likely':r48>10?'Watch rainfall':'Likely steady',r48>25?'bad':r48>10?'warn':'good'); setVal('bestSignal',a.trend.includes('Dropping')?'River falling':'Current level',a.trend.includes('Dropping')?'good':'ok'); setVal('bigConcern',r24>8?'Catchment rain':a.level>.4?'High level':a.c3>0.006?'Rising trend':'None obvious',r24>8||a.level>.4||a.c3>0.006?'warn':'good');}
+function methodStatus(method,period,a,rain){
+  let score=a.score;
+  if(period==='24') score-=rain.r24>12?22:rain.r24>5?10:0;
+  if(period==='48') score-=rain.r48>25?28:rain.r48>10?14:0;
+  if(method==='fly'){
+    if(a.clarity.includes('Chocolate')) score-=32;
+    else if(a.clarity.includes('Coloured')) score-=20;
+    else if(a.clarity.includes('Slight')) score-=8;
+    if(a.c3>0.006) score-=10;
+  }
+  if(method==='spin'){
+    if(a.level>.45||a.clarity.includes('Chocolate')) score-=8;
+    if(a.c3>0.015) score-=8;
+  }
+  if(method==='bait'){
+    if(a.level>.55||a.c3>0.025) score-=14;
+    if(rain.r24>15&&period!=='now') score-=10;
+  }
+  if(score>=72) return {label:'Good',cls:'good'};
+  if(score>=52) return {label:'Fair',cls:'ok'};
+  if(score>=34) return {label:'Poor',cls:'warn'};
+  return {label:'Wait',cls:'bad'};
+}
+function setMethod(id,result){const el=$(id); if(!el)return; el.textContent=result.label; el.className='methodSignal '+result.cls;}
+function renderMethods(a){
+  const rain={r24:sumHours(weatherData,24),r48:sumHours(weatherData,48)};
+  [['Fly','fly'],['Spin','spin'],['Bait','bait']].forEach(([id,method])=>{
+    setMethod(`method${id}Now`,methodStatus(method,'now',a,rain));
+    setMethod(`method${id}24`,methodStatus(method,'24',a,rain));
+    setMethod(`method${id}48`,methodStatus(method,'48',a,rain));
+  });
+}
+function drawChart(data){const c=$('levelChart'),ctx=c.getContext('2d'),w=c.width,h=c.height; ctx.clearRect(0,0,w,h); if(!data.length){ctx.fillStyle='#9db0cc';ctx.fillText('No data',20,30);return;} const pad=42, xs=data.map(p=>p.t.getTime()), ys=data.map(p=>p.v), minX=Math.min(...xs), maxX=Math.max(...xs), minY=Math.min(...ys), maxY=Math.max(...ys), y0=Math.max(0,minY-(maxY-minY)*.15), y1=maxY+(maxY-minY||.1)*.15; ctx.strokeStyle='rgba(255,255,255,.12)';ctx.lineWidth=1; for(let i=0;i<5;i++){let y=pad+(h-pad*2)*i/4;ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.stroke();} ctx.strokeStyle='#49a7ff';ctx.lineWidth=3;ctx.beginPath(); data.forEach((p,i)=>{let x=pad+(p.t.getTime()-minX)/(maxX-minX||1)*(w-pad*2); let y=h-pad-(p.v-y0)/(y1-y0)*(h-pad*2); if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);});ctx.stroke();ctx.fillStyle='#9db0cc';ctx.font='14px system-ui';ctx.fillText(`${fmt(y1)} m`,8,pad+5);ctx.fillText(`${fmt(y0)} m`,8,h-pad+5);}
+$('refreshBtn').onclick=()=>load(); $('btn5').onclick=()=>{currentPeriod='5d';$('btn5').classList.add('active');$('btn31').classList.remove('active');$('chartLabel').textContent='Last 5 days';drawChart(riverData)}; $('btn31').onclick=()=>{currentPeriod='31d';$('btn31').classList.add('active');$('btn5').classList.remove('active');$('chartLabel').textContent='Last month';drawChart(monthData)}; $('riverSearch').oninput=handleRiverSearch; $('riverSelect').onchange=e=>{if(e.target.value) selectRiver(e.target.value);};
+loadCatalogue();
+</script>
+</body>
+</html>
