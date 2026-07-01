@@ -55,7 +55,7 @@ const FALLBACK=[
  {river:'North Esk (Tayside)',id:'14927',name:'Logie Mill',lat:56.729,lon:-2.656,catchment:'Esk Group'},
  {river:'Eye Water',id:'15017',name:'Eyemouth Mill',lat:55.871,lon:-2.100,catchment:'Tweed'}
 ];
-let catalogue=[], rivers=[], currentRiver='', currentStation=null, riverData=[], monthData=[], weatherData=null, currentWeatherTarget=null, currentPeriod='5d';
+let catalogue=[], rivers=[], currentRiver='', currentStation=null, riverData=[], monthData=[], weatherData=null, currentWeatherTarget=null, currentPeriod='5d', loadSeq=0;
 const $=id=>document.getElementById(id); const fmt=(n,d=3)=>Number.isFinite(n)?n.toFixed(d):'--';
 function sepaPageUrl(id){return `https://waterlevels.sepa.org.uk/Station/${id}/`}
 function sepaDataUrl(id,period){return `${API}&request=getTimeseriesValues&ts_path=1/${id}/SG/15m.Cmd&period=${period}&returnfields=Timestamp,Value,Quality%20Code&metadata=true&format=json`}
@@ -128,8 +128,19 @@ function handleRiverSearch(){
   const target=exact||(matches.length===1?matches[0]:null);
   if(target&&target!==currentRiver) selectRiver(target);
 }
-function selectRiver(r){currentRiver=r; const stations=catalogue.filter(s=>s.river===r); currentStation=stations[0]; renderRiverSelect(); renderStationTabs(); load();}
-function renderStationTabs(){const box=$('stationTabs'); box.innerHTML=''; catalogue.filter(s=>s.river===currentRiver).forEach(st=>{const b=document.createElement('button'); b.type='button'; b.innerHTML=`${st.name}<small>${st.id}</small>`; if(currentStation&&st.id===currentStation.id)b.classList.add('active'); b.onclick=()=>{currentStation=st; renderStationTabs(); load();}; box.appendChild(b);});}
+function resetLivePanels(station){
+  riverData=[]; monthData=[]; weatherData=null; currentWeatherTarget=null;
+  $('level').innerHTML='-- <small>m</small>'; $('pressure').innerHTML='-- <small>hPa</small>'; $('rain24').innerHTML='-- <small>mm</small>';
+  ['change3','change6','change12','change24','rain48','rainImpact','temp','wind','cloud','fish24','fish48','bestSignal','bigConcern','methodFlyNow','methodFly24','methodFly48','methodSpinNow','methodSpin24','methodSpin48','methodBaitNow','methodBait24','methodBait48'].forEach(id=>{const el=$(id); if(el) el.textContent='--';});
+  $('score').textContent='--'; $('dial').style.setProperty('--score',0); $('verdict').textContent='Loading...';
+  $('reason').textContent=station?`Loading ${currentRiver} at ${station.name}.`:'Select a station.';
+  $('trendPill').className='pill'; $('trendPill').textContent='Trend'; $('clarityPill').className='pill'; $('clarityPill').textContent='Visibility estimate';
+  $('pressurePill').className='pill'; $('pressurePill').textContent='Pressure trend'; $('weatherTitle').textContent=`${currentRiver} catchment`; $('weatherPoint').textContent='--';
+  $('decisionCard').className='card full decisionCard'; $('goNoGo').textContent='--'; $('decisionText').textContent='Waiting for live river and weather data.';
+  drawChart([]);
+}
+function selectRiver(r){currentRiver=r; const stations=catalogue.filter(s=>s.river===r); currentStation=stations[0]||null; loadSeq++; renderRiverSelect(); renderStationTabs(); resetLivePanels(currentStation); load();}
+function renderStationTabs(){const box=$('stationTabs'); box.innerHTML=''; catalogue.filter(s=>s.river===currentRiver).forEach(st=>{const b=document.createElement('button'); b.type='button'; b.innerHTML=`${st.name}<small>${st.id}</small>`; if(currentStation&&st.id===currentStation.id)b.classList.add('active'); b.onclick=()=>{currentStation=st; loadSeq++; renderStationTabs(); resetLivePanels(currentStation); load();}; box.appendChild(b);});}
 function weatherTargetForCurrentRiver(){
   const catchment=currentStation?.catchment||'';
   const byCatchment=catchment?catalogue.filter(s=>s.catchment===catchment):[];
@@ -150,10 +161,11 @@ async function fetchWeatherForRiver(){
   return j;
 }
 async function load(){
-  if(!currentStation) return; $('sepaLink').href=sepaPageUrl(currentStation.id);
-  $('verdict').textContent='Loading…'; $('reason').textContent='Fetching live SEPA and weather data.';
-  try{const [d5,d31,w]=await Promise.all([fetch(sepaDataUrl(currentStation.id,'P5D')).then(r=>r.json()),fetch(sepaDataUrl(currentStation.id,'P31D')).then(r=>r.json()),fetchWeatherForRiver()]); riverData=parseSepa(d5); monthData=parseSepa(d31); weatherData=w; render();}
-  catch(e){$('verdict').textContent='Data unavailable'; $('reason').innerHTML=`<span class="err">${e.message}</span>`;}
+  const station=currentStation, river=currentRiver, seq=loadSeq;
+  if(!station) return; $('sepaLink').href=sepaPageUrl(station.id);
+  $('verdict').textContent='Loading...'; $('reason').textContent=`Fetching ${river} at ${station.name}.`;
+  try{const [d5,d31,w]=await Promise.all([fetch(sepaDataUrl(station.id,'P5D')).then(r=>r.json()),fetch(sepaDataUrl(station.id,'P31D')).then(r=>r.json()),fetchWeatherForRiver()]); if(seq!==loadSeq||!currentStation||currentStation.id!==station.id||currentRiver!==river) return; riverData=parseSepa(d5); monthData=parseSepa(d31); weatherData=w; render();}
+  catch(e){if(seq!==loadSeq||!currentStation||currentStation.id!==station.id||currentRiver!==river) return; $('verdict').textContent='Data unavailable'; $('reason').innerHTML=`<span class="err">${e.message}</span>`;}
 }
 function render(){const a=analyse(); if(!a)return; $('level').innerHTML=`${fmt(a.level)} <small>m</small>`; $('score').textContent=a.score; $('dial').style.setProperty('--score',a.score); $('verdict').textContent=a.verdict; $('reason').textContent=`${currentRiver} at ${currentStation.name}: ${a.trend.toLowerCase()}, with estimated visibility: ${a.clarity.toLowerCase()}.`; ['3','6','12','24'].forEach(h=>setVal('change'+h,deltaText(a['c'+h]),classForDelta(a['c'+h]))); $('trendPill').className='pill '+(a.trend.includes('Rising')?'bad':a.trend.includes('Dropping')?'good':'ok'); $('trendPill').textContent=a.trend; $('clarityPill').className='pill '+(a.clarity.includes('good')?'good':a.clarity.includes('Slight')?'ok':a.clarity.includes('Coloured')?'warn':'bad'); $('clarityPill').textContent='👁 '+a.clarity; renderWeather(a); renderDecision(a); renderMethods(a); drawChart(currentPeriod==='5d'?riverData:monthData);}
 function sumHours(arr,hours){if(!arr?.hourly?.time)return NaN; const now=Date.now(); const end=now+hours*3600e3; let s=0; arr.hourly.time.forEach((t,i)=>{const ms=new Date(t).getTime(); if(ms>=now&&ms<=end)s+=Number(arr.hourly.precipitation[i])||0;}); return s;}
