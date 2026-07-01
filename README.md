@@ -5,7 +5,8 @@ Your guide to Scotlands river fishing conditions.
 ## Files
 
 - `index.html` - browser-based HTML version of RiverWatch Scotland.
-- `apk/RiverWatch-Scotland-v0.1-debug.apk` - Android debug APK build.
+- `apk/RiverWatch-Scotland-v0.2-debug.apk` - current Android debug APK build.
+- `apk/RiverWatch-Scotland-v0.1-debug.apk` - earlier Android debug APK build.
 
 ## Data Sources
 
