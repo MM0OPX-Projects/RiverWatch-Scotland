@@ -101,6 +101,24 @@ function parseCatalogue(json){
   const seen=new Set(); return out.filter(s=>{const k=s.id+'|'+s.name; if(seen.has(k))return false; seen.add(k); return true;});
 }
 function parseSepa(json){try{let ts=Array.isArray(json)?json[0]:json; let vals=ts.data||ts.values||ts.timeseries?.[0]?.data||[]; return vals.map(v=>{let t=Array.isArray(v)?v[0]:(v.timestamp||v.time||v.Timestamp); let val=parseFloat(Array.isArray(v)?v[1]:(v.value??v.Value)); return {t:new Date(t),v:val};}).filter(p=>Number.isFinite(p.v)&&!isNaN(p.t)).sort((a,b)=>a.t-b.t)}catch(e){return []}}
+function stationCacheKey(id){return `riverwatch:levels:${id}:p31d`}
+function saveStationCache(id,data){try{localStorage.setItem(stationCacheKey(id),JSON.stringify({savedAt:Date.now(),data:data.map(p=>({t:p.t.toISOString(),v:p.v}))}));}catch(e){}}
+function readStationCache(id){try{const raw=localStorage.getItem(stationCacheKey(id)); if(!raw)return null; const c=JSON.parse(raw); const data=(c.data||[]).map(p=>({t:new Date(p.t),v:Number(p.v)})).filter(p=>Number.isFinite(p.v)&&!isNaN(p.t)); return data.length?{savedAt:c.savedAt||0,data}:null;}catch(e){return null}}
+function fiveDaysFrom(data){const latest=data[data.length-1]; if(!latest)return []; const cutoff=latest.t.getTime()-5*24*3600e3; return data.filter(p=>p.t.getTime()>=cutoff)}
+function cacheAgeText(savedAt){if(!savedAt)return 'unknown age'; const mins=Math.round((Date.now()-savedAt)/60000); if(mins<60)return `${mins} min old`; const hrs=Math.round(mins/60); if(hrs<48)return `${hrs} hr old`; return `${Math.round(hrs/24)} days old`;}
+async function fetchStationLevels(station){
+  try{
+    const raw=await fetchJson(sepaDataUrl(station.id,'P31D'),'SEPA level data');
+    const data=parseSepa(raw);
+    if(!data.length) throw new Error('SEPA level data contained no readings');
+    saveStationCache(station.id,data);
+    return {data,cached:false,message:''};
+  }catch(e){
+    const cached=readStationCache(station.id);
+    if(cached) return {data:cached.data,cached:true,message:`Live SEPA levels unavailable (${e.message}). Showing cached readings from ${cacheAgeText(cached.savedAt)}.`};
+    throw e;
+  }
+}
 function latest(){return riverData[riverData.length-1]}
 function changeHours(h){let l=latest(); if(!l)return NaN; let target=l.t.getTime()-h*3600e3; let prev=[...riverData].reverse().find(p=>p.t.getTime()<=target)||riverData[0]; return l.v-prev.v}
 function classForDelta(d){if(!Number.isFinite(d))return''; if(d>0.015)return'bad'; if(d>0.005)return'warn'; if(d<-0.015)return'good'; if(d<-0.005)return'good'; return'ok'}
@@ -176,10 +194,10 @@ async function load(){
   const station=currentStation, river=currentRiver, seq=loadSeq;
   if(!station) return; $('sepaLink').href=sepaPageUrl(station.id);
   $('verdict').textContent='Loading...'; $('reason').textContent=`Fetching ${river} at ${station.name}.`;
-  try{const [d5,d31,w]=await Promise.all([fetchJson(sepaDataUrl(station.id,'P5D'),'SEPA 5 day levels'),fetchJson(sepaDataUrl(station.id,'P31D'),'SEPA 31 day levels'),fetchWeatherForRiver()]); if(seq!==loadSeq||!currentStation||currentStation.id!==station.id||currentRiver!==river) return; riverData=parseSepa(d5); monthData=parseSepa(d31); weatherData=w; render();}
-  catch(e){if(seq!==loadSeq||!currentStation||currentStation.id!==station.id||currentRiver!==river) return; $('verdict').textContent='Data unavailable'; $('reason').innerHTML=`<span class="err">${e.message}</span>`;}
+  try{const [levels,w]=await Promise.all([fetchStationLevels(station),fetchWeatherForRiver()]); if(seq!==loadSeq||!currentStation||currentStation.id!==station.id||currentRiver!==river) return; monthData=levels.data; riverData=fiveDaysFrom(monthData); weatherData=w; render(levels.message);}
+  catch(e){if(seq!==loadSeq||!currentStation||currentStation.id!==station.id||currentRiver!==river) return; $('verdict').textContent='Data unavailable'; $('reason').innerHTML=`<span class="err">${e.message}</span>`; drawChart([]);}
 }
-function render(){const a=analyse(); if(!a)return; $('level').innerHTML=`${fmt(a.level)} <small>m</small>`; $('score').textContent=a.score; $('dial').style.setProperty('--score',a.score); $('verdict').textContent=a.verdict; $('reason').textContent=`${currentRiver} at ${currentStation.name}: ${a.trend.toLowerCase()}, with estimated visibility: ${a.clarity.toLowerCase()}.`; ['3','6','12','24'].forEach(h=>setVal('change'+h,deltaText(a['c'+h]),classForDelta(a['c'+h]))); $('trendPill').className='pill '+(a.trend.includes('Rising')?'bad':a.trend.includes('Dropping')?'good':'ok'); $('trendPill').textContent=a.trend; $('clarityPill').className='pill '+(a.clarity.includes('good')?'good':a.clarity.includes('Slight')?'ok':a.clarity.includes('Coloured')?'warn':'bad'); $('clarityPill').textContent='👁 '+a.clarity; renderWeather(a); renderDecision(a); renderMethods(a); drawChart(currentPeriod==='5d'?riverData:monthData);}
+function render(statusMessage=''){const a=analyse(); if(!a)return; $('level').innerHTML=`${fmt(a.level)} <small>m</small>`; $('score').textContent=a.score; $('dial').style.setProperty('--score',a.score); $('verdict').textContent=a.verdict; $('reason').textContent=statusMessage||`${currentRiver} at ${currentStation.name}: ${a.trend.toLowerCase()}, with estimated visibility: ${a.clarity.toLowerCase()}.`; ['3','6','12','24'].forEach(h=>setVal('change'+h,deltaText(a['c'+h]),classForDelta(a['c'+h]))); $('trendPill').className='pill '+(a.trend.includes('Rising')?'bad':a.trend.includes('Dropping')?'good':'ok'); $('trendPill').textContent=a.trend; $('clarityPill').className='pill '+(a.clarity.includes('good')?'good':a.clarity.includes('Slight')?'ok':a.clarity.includes('Coloured')?'warn':'bad'); $('clarityPill').textContent='👁 '+a.clarity; renderWeather(a); renderDecision(a); renderMethods(a); drawChart(currentPeriod==='5d'?riverData:monthData);}
 function sumHours(arr,hours){if(!arr?.hourly?.time)return NaN; const now=Date.now(); const end=now+hours*3600e3; let s=0; arr.hourly.time.forEach((t,i)=>{const ms=new Date(t).getTime(); if(ms>=now&&ms<=end)s+=Number(arr.hourly.precipitation[i])||0;}); return s;}
 function pressureDelta(){if(!weatherData?.hourly?.time)return NaN; const now=Date.now(); let cur=null,old=null; weatherData.hourly.time.forEach((t,i)=>{const ms=new Date(t).getTime(); if(ms<=now)cur=weatherData.hourly.pressure_msl[i]; if(ms<=now-24*3600e3)old=weatherData.hourly.pressure_msl[i];}); return Number(cur)-Number(old);}
 function renderWeather(a){const cur=weatherData?.current||{}; const r24=sumHours(weatherData,24), r48=sumHours(weatherData,48), pd=pressureDelta(); $('weatherTitle').textContent=currentWeatherTarget?`${currentWeatherTarget.catchment} catchment`:`${currentRiver} catchment`; $('rain24').innerHTML=`${fmt(r24,1)} <small>mm</small>`; setVal('rain48',`${fmt(r48,1)} mm`,r48>20?'bad':r48>10?'warn':r48>4?'ok':'good'); setVal('rainImpact',r24>12?'Rise likely':r24>5?'May rise':'Little impact',r24>12?'bad':r24>5?'warn':'good'); $('pressure').innerHTML=`${fmt(cur.pressure_msl,0)} <small>hPa</small>`; $('pressurePill').className='pill '+(pd>2?'good':pd<-2?'warn':'ok'); $('pressurePill').textContent=(pd>2?'▲ Rising':pd<-2?'▼ Falling':'→ Steady'); $('temp').textContent=Number.isFinite(cur.temperature_2m)?`${Math.round(cur.temperature_2m)}°C`:'--'; $('wind').textContent=Number.isFinite(cur.wind_speed_10m)?`${Math.round(cur.wind_speed_10m)} mph`:'--'; $('cloud').textContent=Number.isFinite(cur.cloud_cover)?`${Math.round(cur.cloud_cover)}%`:'--';}
