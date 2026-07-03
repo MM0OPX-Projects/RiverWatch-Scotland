@@ -1,4 +1,4 @@
-﻿# RiverWatch Scotland
+# RiverWatch Scotland
 
 RiverWatch Scotland is a lightweight river-fishing conditions helper for Scottish rivers. It combines SEPA river level readings, recent level trends, catchment weather, rainfall forecasts, pressure, and simple fishing-method scoring into one mobile-friendly dashboard.
 
@@ -41,14 +41,14 @@ Fishing recommendations are simple scoring rules based on available level, trend
 ## Files
 
 - `index.html` - browser-based HTML version of RiverWatch Scotland.
-- `apk/RiverWatch-Scotland-v0.6-debug.apk` - current Android debug APK build.
+- `apk/RiverWatch-Scotland-v0.7-debug.apk` - current Android debug APK build.
 - Older APK builds are kept in `apk/` for reference.
 
 ## Install On Android
 
 This APK is not Play Store verified. Android will warn you because it is a manually installed debug APK.
 
-1. Download `apk/RiverWatch-Scotland-v0.6-debug.apk` from this repository.
+1. Download `apk/RiverWatch-Scotland-v0.7-debug.apk` from this repository.
 2. Open the downloaded APK on your Android device.
 3. If Android blocks the install, choose the option to allow installs from that source, usually your browser or file manager.
 4. Confirm the install.
