@@ -10,12 +10,13 @@ Created by Colin Summers.
 - Lets you search for a river, then choose one of the available measuring stations.
 - Shows the latest river level in metres.
 - Calculates 3h, 6h, 12h, and 24h river-level change.
-- Gives a quick fishing decision: `GO FISHING`, `FAIR`, `MARGINAL`, or `WAIT`.
 - Estimates likely water clarity from current level and trend.
 - Shows a 5-day or 31-day river-level graph.
 - Shows weather for the selected river/catchment where a weather point can be resolved.
 - Shows estimated rain for the next 24h and 48h.
-- Gives method guidance for fly fishing, spinning, and bait fishing.
+- Gives separate trout/grayling and salmon/sea trout scores.
+- Gives method guidance for fly fishing, spinning, and bait fishing for now, 24h, and 48h.
+- Keeps weather loading independent from SEPA level loading where possible.
 - Includes an Android APK and a standalone HTML version.
 
 ## How It Works
@@ -25,6 +26,10 @@ The app is a single-page HTML/JavaScript dashboard wrapped in a simple Android W
 At startup it loads a bundled SEPA station catalogue cache containing Scottish river/station names. This means the river list remains available even if SEPA rate-limits the live catalogue API.
 
 When you select a river/station, the app asks SEPA for recent level readings for that station. It then calculates level trend, estimated clarity, and fishing condition scores. Successful station readings are cached locally on the device, so recent cached readings can still be shown if SEPA temporarily returns a rate-limit response.
+
+Trout and grayling recommendations are deliberately cautious: they need clear, settled water over roughly two days before the app rates conditions as good. Salmon and sea trout recommendations favour fresh water moving through the river, especially a recent rise that is now falling.
+
+If SEPA live level data is unavailable, the app still lets you select a catchment and station and open the official SEPA station page from the app.
 
 Weather uses Open-Meteo. Known catchment points are built in for several common rivers, and the app can fall back to Open-Meteo geocoding for other station/river names. No Open-Meteo API key is required.
 
@@ -41,14 +46,14 @@ Fishing recommendations are simple scoring rules based on available level, trend
 ## Files
 
 - `index.html` - browser-based HTML version of RiverWatch Scotland.
-- `apk/RiverWatch-Scotland-v0.12-debug.apk` - current Android debug APK build.
+- `apk/RiverWatch-Scotland-v0.13-debug.apk` - current Android debug APK build.
 - Older APK builds are kept in `apk/` for reference.
 
 ## Install On Android
 
 This APK is not Play Store verified. Android will warn you because it is a manually installed debug APK.
 
-1. Download `apk/RiverWatch-Scotland-v0.12-debug.apk` from this repository.
+1. Download `apk/RiverWatch-Scotland-v0.13-debug.apk` from this repository.
 2. Open the downloaded APK on your Android device.
 3. If Android blocks the install, choose the option to allow installs from that source, usually your browser or file manager.
 4. Confirm the install.
