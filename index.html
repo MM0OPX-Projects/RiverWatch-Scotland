@@ -150,8 +150,12 @@ function analyse(){
 async function loadCatalogue(){
   catalogue=Array.isArray(CATALOGUE_CACHE)&&CATALOGUE_CACHE.length?CATALOGUE_CACHE:FALLBACK;
   rivers=[...new Set(catalogue.map(s=>s.river||'Unknown river'))].sort((a,b)=>a.localeCompare(b));
-  currentRiver=rivers.find(r=>/Almond/i.test(r))||rivers[0]; renderRiverSelect(); selectRiver(currentRiver);
+  const saved=readSelection(), savedStation=saved?.stationId?catalogue.find(s=>s.id===saved.stationId):null;
+  currentRiver=(savedStation&&rivers.includes(savedStation.river)?savedStation.river:null)||(saved?.river&&rivers.includes(saved.river)?saved.river:null)||rivers.find(r=>/Almond/i.test(r))||rivers[0];
+  renderRiverSelect(); selectRiver(currentRiver, savedStation?.id);
 }
+function saveSelection(){try{if(currentRiver&&currentStation)localStorage.setItem('riverwatch:selected',JSON.stringify({river:currentRiver,stationId:currentStation.id}));}catch(e){}}
+function readSelection(){try{const raw=localStorage.getItem('riverwatch:selected'); return raw?JSON.parse(raw):null;}catch(e){return null}}
 function matchingRivers(){const q=$('riverSearch').value.trim().toLowerCase(); return rivers.filter(r=>!q||r.toLowerCase().includes(q));}
 function renderRiverSelect(){
   const matches=matchingRivers(); const sel=$('riverSelect'); sel.innerHTML='';
@@ -178,8 +182,8 @@ function resetLivePanels(station){
   $('weatherTitle').textContent=`${currentRiver} catchment`; $('weatherPoint').textContent='--'; $('levelStatus').textContent=station?'Loading SEPA station data.':'Select a station.';
   drawChart([]);
 }
-function selectRiver(r){currentRiver=r; const stations=catalogue.filter(s=>s.river===r); currentStation=stations[0]||null; loadSeq++; renderRiverSelect(); renderStationTabs(); resetLivePanels(currentStation); load();}
-function renderStationTabs(){const box=$('stationTabs'); box.innerHTML=''; catalogue.filter(s=>s.river===currentRiver).forEach(st=>{const b=document.createElement('button'); b.type='button'; b.innerHTML=`${st.name}<small>${st.id}</small>`; if(currentStation&&st.id===currentStation.id)b.classList.add('active'); b.onclick=()=>{currentStation=st; loadSeq++; renderStationTabs(); resetLivePanels(currentStation); load();}; box.appendChild(b);});}
+function selectRiver(r,preferredStationId){currentRiver=r; const stations=catalogue.filter(s=>s.river===r); currentStation=stations.find(s=>s.id===preferredStationId)||stations[0]||null; saveSelection(); loadSeq++; renderRiverSelect(); renderStationTabs(); resetLivePanels(currentStation); load();}
+function renderStationTabs(){const box=$('stationTabs'); box.innerHTML=''; catalogue.filter(s=>s.river===currentRiver).forEach(st=>{const b=document.createElement('button'); b.type='button'; b.innerHTML=`${st.name}<small>${st.id}</small>`; if(currentStation&&st.id===currentStation.id)b.classList.add('active'); b.onclick=()=>{currentStation=st; saveSelection(); loadSeq++; renderStationTabs(); resetLivePanels(currentStation); load();}; box.appendChild(b);});}
 function weatherCacheKey(station){return `riverwatch:weatherpoint:${station.id}`}
 function cleanGeoName(name){return String(name||'').replace(/\([^)]*\)/g,'').replace(/(Gauging Station|GS|Bridge|Burn|Water|River|Level|Outlet)/gi,'').replace(/\s+/g,' ').trim()}
 function cachedWeatherPoint(station){try{const raw=localStorage.getItem(weatherCacheKey(station)); return raw?JSON.parse(raw):null;}catch(e){return null}}
