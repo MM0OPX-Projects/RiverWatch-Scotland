@@ -29,9 +29,11 @@ When you select a river/station, the app asks a Cloudflare Worker proxy for rece
 
 The app then calculates level trend, estimated clarity, and fishing condition scores. Successful station readings are cached locally on the device. A station is reused from the device cache for 15 minutes, reducing repeat API use when switching between stations or reopening the app. Older cached readings can still be shown if SEPA temporarily returns an error or the proxy is unavailable. The Refresh button deliberately requests new data.
 
-The recommendation model adapts to each selected gauging station. It compares the current level with that station's own recent range, measures the relative speed and size of a rise, finds the latest peak, and estimates how long the water has remained settled. Faster-changing stations use about 48 hours as their settling period, while slower stations can require 60 or 72 hours.
+The recommendation model adapts to each selected gauging station. It compares the current level with that station's own recent range, measures smoothed trend anchors, verifies that a genuine low occurred before a later peak, and estimates how long the water has remained settled. Smoothing prevents short gauge fluctuations from being mistaken for a sustained rise. Faster-changing stations use about 48 hours as their settling period, while slower stations can require 60 or 72 hours.
 
 Trout and grayling recommendations are deliberately cautious: they need locally normal or slightly low water, improving clarity, limited forecast rainfall, and the station-specific settled period before the app rates conditions as good. Salmon and sea trout recommendations favour a meaningful fresh rise followed by falling water and slight colour. Rapidly rising water, full spate, and locally very low stale conditions are penalised.
+
+Very-low-water conditions and stations with less than five days of usable recent history are capped below Good. This prevents stable but extremely low water, or incomplete station data, from producing an overconfident recommendation.
 
 If SEPA live level data is unavailable, the app still lets you select a catchment and station and open the official SEPA station page from the app.
 
@@ -50,14 +52,14 @@ Fishing recommendations are estimates based on station-relative level, trend, re
 ## Files
 
 - `index.html` - browser-based HTML version of RiverWatch Scotland.
-- `apk/RiverWatch-Scotland-v0.18-debug.apk` - current Android debug APK build.
+- `apk/RiverWatch-Scotland-v0.19-debug.apk` - current Android debug APK build.
 - Older APK builds are kept in `apk/` for reference.
 
 ## Install On Android
 
 This APK is not Play Store verified. Android will warn you because it is a manually installed debug APK.
 
-1. Download `apk/RiverWatch-Scotland-v0.18-debug.apk` from this repository.
+1. Download `apk/RiverWatch-Scotland-v0.19-debug.apk` from this repository.
 2. Open the downloaded APK on your Android device.
 3. If Android blocks the install, choose the option to allow installs from that source, usually your browser or file manager.
 4. Confirm the install.
