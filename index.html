@@ -114,11 +114,16 @@ function parseCatalogue(json){
 }
 function parseSepa(json){try{let ts=Array.isArray(json)?json[0]:json; let vals=ts.data||ts.values||ts.timeseries?.[0]?.data||[]; return vals.map(v=>{let t=Array.isArray(v)?v[0]:(v.timestamp||v.time||v.Timestamp); let val=parseFloat(Array.isArray(v)?v[1]:(v.value??v.Value)); return {t:new Date(t),v:val};}).filter(p=>Number.isFinite(p.v)&&!isNaN(p.t)).sort((a,b)=>a.t-b.t)}catch(e){return []}}
 function stationCacheKey(id){return `riverwatch:levels:${id}:p31d`}
+const SEPA_CACHE_MAX_AGE=15*60*1000;
 function saveStationCache(id,data){try{localStorage.setItem(stationCacheKey(id),JSON.stringify({savedAt:Date.now(),data:data.map(p=>({t:p.t.toISOString(),v:p.v}))}));}catch(e){}}
 function readStationCache(id){try{const raw=localStorage.getItem(stationCacheKey(id)); if(!raw)return null; const c=JSON.parse(raw); const data=(c.data||[]).map(p=>({t:new Date(p.t),v:Number(p.v)})).filter(p=>Number.isFinite(p.v)&&!isNaN(p.t)); return data.length?{savedAt:c.savedAt||0,data}:null;}catch(e){return null}}
 function fiveDaysFrom(data){const latest=data[data.length-1]; if(!latest)return []; const cutoff=latest.t.getTime()-5*24*3600e3; return data.filter(p=>p.t.getTime()>=cutoff)}
-function cacheAgeText(savedAt){if(!savedAt)return 'unknown age'; const mins=Math.round((Date.now()-savedAt)/60000); if(mins<60)return `${mins} min old`; const hrs=Math.round(mins/60); if(hrs<48)return `${hrs} hr old`; return `${Math.round(hrs/24)} days old`;}
-async function fetchStationLevels(station){
+function cacheAgeText(savedAt){if(!savedAt)return 'at an unknown time'; const mins=Math.round((Date.now()-savedAt)/60000); if(mins<1)return 'just now'; if(mins<60)return `${mins} min ago`; const hrs=Math.round(mins/60); if(hrs<48)return `${hrs} hr ago`; return `${Math.round(hrs/24)} days ago`;}
+async function fetchStationLevels(station,forceRefresh=false){
+  const cached=readStationCache(station.id);
+  if(!forceRefresh&&cached&&Date.now()-cached.savedAt<SEPA_CACHE_MAX_AGE){
+    return {data:cached.data,cached:true,message:`Using saved SEPA readings, updated ${cacheAgeText(cached.savedAt)}.`};
+  }
   try{
     const raw=await fetchJson(sepaDataUrl(station.id,'P31D'),'SEPA level data');
     const data=parseSepa(raw);
@@ -126,7 +131,6 @@ async function fetchStationLevels(station){
     saveStationCache(station.id,data);
     return {data,cached:false,message:''};
   }catch(e){
-    const cached=readStationCache(station.id);
     if(cached) return {data:cached.data,cached:true,message:`Live SEPA levels unavailable (${e.message}). Showing cached readings from ${cacheAgeText(cached.savedAt)}.`};
     throw e;
   }
@@ -216,12 +220,12 @@ async function fetchWeatherForRiver(){
   try{const j=await fetchJson(weatherUrl(target.lat,target.lon),'Open-Meteo weather'); $('weatherPoint').textContent=`${target.catchment} ${target.source}`; return j;}
   catch(e){$('weatherPoint').textContent='Weather unavailable'; return null;}
 }
-async function load(){
+async function load(forceRefresh=false){
   const station=currentStation, river=currentRiver, seq=loadSeq;
   if(!station) return; $('sepaLink').href=sepaPageUrl(station.id);
   const weatherPromise=fetchWeatherForRiver().catch(()=>null);
   let levels=null, levelError=null;
-  try{levels=await fetchStationLevels(station);}catch(e){levelError=e;}
+  try{levels=await fetchStationLevels(station,forceRefresh);}catch(e){levelError=e;}
   const w=await weatherPromise;
   if(seq!==loadSeq||!currentStation||currentStation.id!==station.id||currentRiver!==river) return;
   weatherData=w;
@@ -268,8 +272,9 @@ function renderMethods(a){
     $(`ss${id}Why`).textContent=whyText('salmon',method,a,rain);
   });
 }
-function drawChart(data){const c=$('levelChart'),ctx=c.getContext('2d'),w=c.width,h=c.height; ctx.clearRect(0,0,w,h); if(!data.length){ctx.fillStyle='#9db0cc';ctx.fillText('No data',20,30);return;} const pad=42, xs=data.map(p=>p.t.getTime()), ys=data.map(p=>p.v), minX=Math.min(...xs), maxX=Math.max(...xs), minY=Math.min(...ys), maxY=Math.max(...ys), y0=Math.max(0,minY-(maxY-minY)*.15), y1=maxY+(maxY-minY||.1)*.15; ctx.strokeStyle='rgba(255,255,255,.12)';ctx.lineWidth=1; for(let i=0;i<5;i++){let y=pad+(h-pad*2)*i/4;ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.stroke();} ctx.strokeStyle='#49a7ff';ctx.lineWidth=3;ctx.beginPath(); data.forEach((p,i)=>{let x=pad+(p.t.getTime()-minX)/(maxX-minX||1)*(w-pad*2); let y=h-pad-(p.v-y0)/(y1-y0)*(h-pad*2); if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);});ctx.stroke();ctx.fillStyle='#9db0cc';ctx.font='14px system-ui';ctx.fillText(`${fmt(y1)} m`,8,pad+5);ctx.fillText(`${fmt(y0)} m`,8,h-pad+5);}
-$('refreshBtn').onclick=()=>load(); $('btn5').onclick=()=>{currentPeriod='5d';$('btn5').classList.add('active');$('btn31').classList.remove('active');$('chartLabel').textContent='Last 5 days';drawChart(riverData)}; $('btn31').onclick=()=>{currentPeriod='31d';$('btn31').classList.add('active');$('btn5').classList.remove('active');$('chartLabel').textContent='Last month';drawChart(monthData)}; $('riverSearch').oninput=handleRiverSearch; $('riverSelect').onchange=e=>{if(e.target.value) selectRiver(e.target.value);};
+function chartDateLabel(ms,isLast){const d=new Date(ms),now=new Date(); if(isLast&&d.toDateString()===now.toDateString())return 'Today'; return currentPeriod==='5d'?d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric'}):d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});}
+function drawChart(data){const c=$('levelChart'),ctx=c.getContext('2d'),w=c.width,h=c.height; ctx.clearRect(0,0,w,h); if(!data.length){ctx.fillStyle='#9db0cc';ctx.font='14px system-ui';ctx.fillText('No data',20,30);return;} const left=48,right=18,top=30,bottom=58,plotW=w-left-right,plotH=h-top-bottom,xOf=t=>left+(t-minX)/(maxX-minX||1)*plotW,yOf=v=>top+plotH-(v-y0)/(y1-y0)*plotH,xs=data.map(p=>p.t.getTime()),ys=data.map(p=>p.v),minX=Math.min(...xs),maxX=Math.max(...xs),minY=Math.min(...ys),maxY=Math.max(...ys),y0=Math.max(0,minY-(maxY-minY)*.15),y1=maxY+(maxY-minY||.1)*.15; ctx.strokeStyle='rgba(255,255,255,.12)';ctx.lineWidth=1; for(let i=0;i<5;i++){const y=top+plotH*i/4;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(w-right,y);ctx.stroke();} const ticks=currentPeriod==='5d'?6:5; ctx.font='13px system-ui';ctx.textBaseline='top'; for(let i=0;i<ticks;i++){const ms=minX+(maxX-minX)*i/(ticks-1),x=xOf(ms);ctx.strokeStyle='rgba(255,255,255,.12)';ctx.beginPath();ctx.moveTo(x,top+plotH);ctx.lineTo(x,top+plotH+6);ctx.stroke();ctx.fillStyle='#9db0cc';ctx.textAlign=i===0?'left':i===ticks-1?'right':'center';ctx.fillText(chartDateLabel(ms,i===ticks-1),x,top+plotH+11);} ctx.strokeStyle='#49a7ff';ctx.lineWidth=3;ctx.beginPath();data.forEach((p,i)=>{const x=xOf(p.t.getTime()),y=yOf(p.v);if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);});ctx.stroke();ctx.fillStyle='#9db0cc';ctx.font='14px system-ui';ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.fillText(`${fmt(y1)} m`,6,top+5);ctx.fillText(`${fmt(y0)} m`,6,top+plotH+5);}
+$('refreshBtn').onclick=()=>load(true); $('btn5').onclick=()=>{currentPeriod='5d';$('btn5').classList.add('active');$('btn31').classList.remove('active');$('chartLabel').textContent='Last 5 days';drawChart(riverData)}; $('btn31').onclick=()=>{currentPeriod='31d';$('btn31').classList.add('active');$('btn5').classList.remove('active');$('chartLabel').textContent='Last month';drawChart(monthData)}; $('riverSearch').oninput=handleRiverSearch; $('riverSelect').onchange=e=>{if(e.target.value) selectRiver(e.target.value);};
 loadCatalogue();
 </script>
 </body>

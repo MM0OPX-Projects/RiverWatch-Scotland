@@ -11,7 +11,7 @@ Created by Colin Summers.
 - Shows the latest river level in metres.
 - Calculates 3h, 6h, 12h, and 24h river-level change.
 - Estimates likely water clarity from current level and trend.
-- Shows a 5-day or 31-day river-level graph.
+- Shows a 5-day or 31-day river-level graph with readable date labels.
 - Shows weather for the selected river/catchment where a weather point can be resolved.
 - Shows estimated rain for the next 24h and 48h.
 - Gives separate trout/grayling and salmon/sea trout scores.
@@ -27,7 +27,7 @@ At startup it loads a bundled SEPA station catalogue cache containing Scottish r
 
 When you select a river/station, the app asks a Cloudflare Worker proxy for recent SEPA level readings for that station. The Worker holds the SEPA API key as a Cloudflare secret, requests a short-lived SEPA access token server-side, and returns the SEPA data to the app. The API key is not stored in the public HTML or APK.
 
-The app then calculates level trend, estimated clarity, and fishing condition scores. Successful station readings are cached locally on the device, so recent cached readings can still be shown if SEPA temporarily returns an error or the proxy is unavailable.
+The app then calculates level trend, estimated clarity, and fishing condition scores. Successful station readings are cached locally on the device. A station is reused from the device cache for 15 minutes, reducing repeat API use when switching between stations or reopening the app. Older cached readings can still be shown if SEPA temporarily returns an error or the proxy is unavailable. The Refresh button deliberately requests new data.
 
 Trout and grayling recommendations are deliberately cautious: they need clear, settled water over roughly two days before the app rates conditions as good. Salmon and sea trout recommendations favour fresh water moving through the river, especially a recent rise that is now falling.
 
@@ -48,14 +48,14 @@ Fishing recommendations are simple scoring rules based on available level, trend
 ## Files
 
 - `index.html` - browser-based HTML version of RiverWatch Scotland.
-- `apk/RiverWatch-Scotland-v0.16-debug.apk` - current Android debug APK build.
+- `apk/RiverWatch-Scotland-v0.17-debug.apk` - current Android debug APK build.
 - Older APK builds are kept in `apk/` for reference.
 
 ## Install On Android
 
 This APK is not Play Store verified. Android will warn you because it is a manually installed debug APK.
 
-1. Download `apk/RiverWatch-Scotland-v0.16-debug.apk` from this repository.
+1. Download `apk/RiverWatch-Scotland-v0.17-debug.apk` from this repository.
 2. Open the downloaded APK on your Android device.
 3. If Android blocks the install, choose the option to allow installs from that source, usually your browser or file manager.
 4. Confirm the install.
