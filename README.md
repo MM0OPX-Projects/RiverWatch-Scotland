@@ -11,7 +11,7 @@ Created by Colin Summers.
 - Shows the latest river level in metres.
 - Calculates 3h, 6h, 12h, and 24h river-level change.
 - Estimates likely water clarity from current level and trend.
-- Shows a 5-day or 31-day river-level graph with readable date labels.
+- Shows a 5-day or 31-day river-level graph with clear date and level labels, plus pinch zoom and horizontal panning for closer inspection.
 - Shows weather for the selected river/catchment where a weather point can be resolved.
 - Shows estimated rain for the next 24h and 48h.
 - Gives separate trout/grayling and salmon/sea trout scores.
@@ -52,14 +52,14 @@ Fishing recommendations are estimates based on station-relative level, trend, re
 ## Files
 
 - `index.html` - browser-based HTML version of RiverWatch Scotland.
-- `apk/RiverWatch-Scotland-v0.19-debug.apk` - current Android debug APK build.
+- `apk/RiverWatch-Scotland-v0.20-debug.apk` - current Android debug APK build.
 - Older APK builds are kept in `apk/` for reference.
 
 ## Install On Android
 
 This APK is not Play Store verified. Android will warn you because it is a manually installed debug APK.
 
-1. Download `apk/RiverWatch-Scotland-v0.19-debug.apk` from this repository.
+1. Download `apk/RiverWatch-Scotland-v0.20-debug.apk` from this repository.
 2. Open the downloaded APK on your Android device.
 3. If Android blocks the install, choose the option to allow installs from that source, usually your browser or file manager.
 4. Confirm the install.
