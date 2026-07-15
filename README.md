@@ -29,7 +29,9 @@ When you select a river/station, the app asks a Cloudflare Worker proxy for rece
 
 The app then calculates level trend, estimated clarity, and fishing condition scores. Successful station readings are cached locally on the device. A station is reused from the device cache for 15 minutes, reducing repeat API use when switching between stations or reopening the app. Older cached readings can still be shown if SEPA temporarily returns an error or the proxy is unavailable. The Refresh button deliberately requests new data.
 
-Trout and grayling recommendations are deliberately cautious: they need clear, settled water over roughly two days before the app rates conditions as good. Salmon and sea trout recommendations favour fresh water moving through the river, especially a recent rise that is now falling.
+The recommendation model adapts to each selected gauging station. It compares the current level with that station's own recent range, measures the relative speed and size of a rise, finds the latest peak, and estimates how long the water has remained settled. Faster-changing stations use about 48 hours as their settling period, while slower stations can require 60 or 72 hours.
+
+Trout and grayling recommendations are deliberately cautious: they need locally normal or slightly low water, improving clarity, limited forecast rainfall, and the station-specific settled period before the app rates conditions as good. Salmon and sea trout recommendations favour a meaningful fresh rise followed by falling water and slight colour. Rapidly rising water, full spate, and locally very low stale conditions are penalised.
 
 If SEPA live level data is unavailable, the app still lets you select a catchment and station and open the official SEPA station page from the app.
 
@@ -41,21 +43,21 @@ This app is a guide, not an official safety or fishing authority.
 
 SEPA API access depends on the configured Cloudflare Worker proxy and the SEPA access key limits. If the proxy, SEPA service, or access limit is unavailable, live level updates may not load. The river list should still work because it is bundled in the app.
 
-Water colour/clarity is not directly measured by SEPA. The app estimates clarity from river level and trend only.
+Water colour/clarity is not directly measured by SEPA. The app estimates it from the station's recent rise, time since peak, level trend, and catchment rainfall, so local observation remains more reliable.
 
-Fishing recommendations are simple scoring rules based on available level, trend, rain, and pressure data. Local knowledge, regulations, conditions, and safety should always come first.
+Fishing recommendations are estimates based on station-relative level, trend, recent rise and settling time, plus catchment rainfall. Local knowledge, regulations, conditions, and safety should always come first.
 
 ## Files
 
 - `index.html` - browser-based HTML version of RiverWatch Scotland.
-- `apk/RiverWatch-Scotland-v0.17-debug.apk` - current Android debug APK build.
+- `apk/RiverWatch-Scotland-v0.18-debug.apk` - current Android debug APK build.
 - Older APK builds are kept in `apk/` for reference.
 
 ## Install On Android
 
 This APK is not Play Store verified. Android will warn you because it is a manually installed debug APK.
 
-1. Download `apk/RiverWatch-Scotland-v0.17-debug.apk` from this repository.
+1. Download `apk/RiverWatch-Scotland-v0.18-debug.apk` from this repository.
 2. Open the downloaded APK on your Android device.
 3. If Android blocks the install, choose the option to allow installs from that source, usually your browser or file manager.
 4. Confirm the install.
