@@ -25,7 +25,9 @@ The app is a single-page HTML/JavaScript dashboard wrapped in a simple Android W
 
 At startup it loads a bundled SEPA station catalogue cache containing Scottish river/station names. This means the river list remains available even if SEPA rate-limits the live catalogue API.
 
-When you select a river/station, the app asks SEPA for recent level readings for that station. It then calculates level trend, estimated clarity, and fishing condition scores. Successful station readings are cached locally on the device, so recent cached readings can still be shown if SEPA temporarily returns a rate-limit response.
+When you select a river/station, the app asks a Cloudflare Worker proxy for recent SEPA level readings for that station. The Worker holds the SEPA API key as a Cloudflare secret, requests a short-lived SEPA access token server-side, and returns the SEPA data to the app. The API key is not stored in the public HTML or APK.
+
+The app then calculates level trend, estimated clarity, and fishing condition scores. Successful station readings are cached locally on the device, so recent cached readings can still be shown if SEPA temporarily returns an error or the proxy is unavailable.
 
 Trout and grayling recommendations are deliberately cautious: they need clear, settled water over roughly two days before the app rates conditions as good. Salmon and sea trout recommendations favour fresh water moving through the river, especially a recent rise that is now falling.
 
@@ -37,7 +39,7 @@ Weather uses Open-Meteo. Known catchment points are built in for several common 
 
 This app is a guide, not an official safety or fishing authority.
 
-SEPA anonymous API access can return `HTTP 429 AuthCreditLimit` if the shared daily credit limit is exceeded. When that happens, live level updates may not load until SEPA allows requests again. The river list should still work because it is bundled in the app.
+SEPA API access depends on the configured Cloudflare Worker proxy and the SEPA access key limits. If the proxy, SEPA service, or access limit is unavailable, live level updates may not load. The river list should still work because it is bundled in the app.
 
 Water colour/clarity is not directly measured by SEPA. The app estimates clarity from river level and trend only.
 
@@ -46,14 +48,14 @@ Fishing recommendations are simple scoring rules based on available level, trend
 ## Files
 
 - `index.html` - browser-based HTML version of RiverWatch Scotland.
-- `apk/RiverWatch-Scotland-v0.15-debug.apk` - current Android debug APK build.
+- `apk/RiverWatch-Scotland-v0.16-debug.apk` - current Android debug APK build.
 - Older APK builds are kept in `apk/` for reference.
 
 ## Install On Android
 
 This APK is not Play Store verified. Android will warn you because it is a manually installed debug APK.
 
-1. Download `apk/RiverWatch-Scotland-v0.15-debug.apk` from this repository.
+1. Download `apk/RiverWatch-Scotland-v0.16-debug.apk` from this repository.
 2. Open the downloaded APK on your Android device.
 3. If Android blocks the install, choose the option to allow installs from that source, usually your browser or file manager.
 4. Confirm the install.
