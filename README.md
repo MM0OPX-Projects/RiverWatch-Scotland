@@ -14,6 +14,7 @@ Created by Colin Summers.
 - Shows a 5-day or 31-day river-level graph with clear date and level labels, plus pinch zoom and horizontal panning for closer inspection.
 - Shows weather for the selected river/catchment where a weather point can be resolved.
 - Shows estimated rain for the next 24h and 48h.
+- Estimates an expected river-rise range and timing, with High, Medium, or Low confidence.
 - Gives separate trout/grayling and salmon/sea trout scores.
 - Gives method guidance for fly fishing, spinning, and bait fishing for now, 24h, and 48h.
 - Keeps weather loading independent from SEPA level loading where possible.
@@ -27,11 +28,17 @@ At startup it loads a bundled SEPA station catalogue cache containing Scottish r
 
 When you select a river/station, the app asks a Cloudflare Worker proxy for recent SEPA level readings for that station. The Worker holds the SEPA API key as a Cloudflare secret, requests a short-lived SEPA access token server-side, and returns the SEPA data to the app. The API key is not stored in the public HTML or APK.
 
-The app then calculates level trend, estimated clarity, and fishing condition scores. Successful station readings are cached locally on the device. A station is reused from the device cache for 15 minutes, reducing repeat API use when switching between stations or reopening the app. Older cached readings can still be shown if SEPA temporarily returns an error or the proxy is unavailable. The Refresh button deliberately requests new data.
+The app then calculates level trend, estimated clarity, expected river rise, and fishing condition scores. Successful station readings are cached locally on the device. A station is reused from the device cache for 15 minutes, reducing repeat API use when switching between stations or reopening the app. Older cached readings can still be shown if SEPA temporarily returns an error or the proxy is unavailable. The Refresh button deliberately requests new data.
+
+The expected-rise estimate combines observed 6h, 12h, and 24h level movement with recent and forecast rainfall. It is displayed as a range rather than an exact figure. Almondell uses a locally calibrated experimental profile plus cached observations from the Harperrig, Gogarbank, and Murray Burn SEPA rainfall gauges. Other stations use a deliberately wider, conservative fallback estimate until sufficient local validation is available.
+
+Confidence is shown as High, Medium, or Low. High confidence requires fresh, agreeing level, gauge, and forecast signals at Almondell. Missing or conflicting inputs reduce confidence. If the available data cannot support an estimate, the app displays `Prediction unavailable`.
 
 The recommendation model adapts to each selected gauging station. It compares the current level with that station's own recent range, measures smoothed trend anchors, verifies that a genuine low occurred before a later peak, and estimates how long the water has remained settled. Smoothing prevents short gauge fluctuations from being mistaken for a sustained rise. Faster-changing stations use about 48 hours as their settling period, while slower stations can require 60 or 72 hours.
 
-Trout and grayling recommendations are deliberately cautious: they need locally normal or slightly low water, improving clarity, limited forecast rainfall, and the station-specific settled period before the app rates conditions as good. Salmon and sea trout recommendations favour a meaningful fresh rise followed by falling water and slight colour. Rapidly rising water, full spate, and locally very low stale conditions are penalised.
+Trout and grayling recommendations are deliberately cautious: current conditions primarily use observed level behaviour, while the 24h and 48h columns progressively apply the expected-rise range and settling time. A modest forecast rise reduces the outlook gradually rather than immediately changing Good to Poor. Salmon and sea trout recommendations favour a meaningful fresh rise followed by falling water and slight colour. Rapidly rising water, full spate, and locally very low stale conditions are penalised.
+
+Recent scores are smoothed on the device so a small forecast update cannot cause a large jump. Safety-significant observed changes, such as full spate or a rapid active rise, are not held back by smoothing.
 
 Very-low-water conditions and stations with less than five days of usable recent history are capped below Good. This prevents stable but extremely low water, or incomplete station data, from producing an overconfident recommendation.
 
@@ -47,19 +54,20 @@ SEPA API access depends on the configured Cloudflare Worker proxy and the SEPA a
 
 Water colour/clarity is not directly measured by SEPA. The app estimates it from the station's recent rise, time since peak, level trend, and catchment rainfall, so local observation remains more reliable.
 
-Fishing recommendations are estimates based on station-relative level, trend, recent rise and settling time, plus catchment rainfall. Local knowledge, regulations, conditions, and safety should always come first.
+Expected-rise and fishing recommendations are experimental estimates based on station-relative level, trend, recent rise, settling time, and catchment rainfall. They are not hydrological forecasts. Local knowledge, regulations, conditions, and safety should always come first.
 
 ## Files
 
 - `index.html` - browser-based HTML version of RiverWatch Scotland.
-- `apk/RiverWatch-Scotland-v0.23-debug.apk` - current Android debug APK build (Android 6 or newer).
+- `apk/RiverWatch-Scotland-v0.24-debug.apk` - current Android debug APK build (Android 6 or newer).
+- `docs/WEATHER_ACCURACY_AUDIT.md` - rainfall and Almondell prediction audit notes.
 - Older APK builds are kept in `apk/` for reference.
 
 ## Install On Android
 
 This APK is not Play Store verified. Android will warn you because it is a manually installed debug APK.
 
-1. Download `apk/RiverWatch-Scotland-v0.23-debug.apk` from this repository.
+1. Download `apk/RiverWatch-Scotland-v0.24-debug.apk` from this repository.
 2. Open the downloaded APK on your Android device.
 3. If Android blocks the install, choose the option to allow installs from that source, usually your browser or file manager.
 4. Confirm the install.
@@ -89,6 +97,7 @@ http://127.0.0.1:8897/
 
 - [SEPA Water Levels](https://waterlevels.sepa.org.uk/)
 - SEPA Time Series API
+- SEPA Rainfall API
 - [Open-Meteo](https://open-meteo.com/) forecast and geocoding data
 
 ## Credits
